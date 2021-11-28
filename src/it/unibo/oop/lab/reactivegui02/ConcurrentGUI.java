@@ -1,12 +1,12 @@
 package it.unibo.oop.lab.reactivegui02;
 
 import java.awt.Dimension;
-import java.awt.GraphicsConfiguration;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
+import java.awt.FlowLayout;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -14,12 +14,19 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import it.unibo.oop.lab.reactivegui01.ConcurrentGUI.Agent;
 
 
-
+/**
+ * 
+ * 
+ *
+ */
 public class ConcurrentGUI extends JFrame {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -7684205832904834869L;
     private static final double WIDTH_PERC = 0.2;
     private static final double HEIGHT_PERC = 0.1;
 
@@ -28,7 +35,7 @@ public class ConcurrentGUI extends JFrame {
     private final JButton down;
     private final JButton stop;
 
-    public ConcurrentGUI() throws HeadlessException {
+    public ConcurrentGUI() {
         super();
         final JPanel canvas = new JPanel();
 
@@ -41,6 +48,7 @@ public class ConcurrentGUI extends JFrame {
         this.setSize((int) (screenSize.getWidth() * WIDTH_PERC), (int) (screenSize.getHeight() * HEIGHT_PERC));
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+        canvas.setLayout(new FlowLayout());
         canvas.add(display);
         canvas.add(up);
         canvas.add(down);
@@ -52,6 +60,9 @@ public class ConcurrentGUI extends JFrame {
         stop.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 agent.stop();
+                up.setEnabled(false);
+                down.setEnabled(false);
+                stop.setEnabled(false);
             }
         });
         up.addActionListener(new ActionListener() {
@@ -94,6 +105,7 @@ public class ConcurrentGUI extends JFrame {
                         }
                     });
                     counter += this.add;
+                    Thread.sleep(100);
                 } catch (InvocationTargetException | InterruptedException ex) {
                     ex.printStackTrace();
                 }
