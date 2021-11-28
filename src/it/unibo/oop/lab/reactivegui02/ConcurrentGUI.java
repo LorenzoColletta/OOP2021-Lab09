@@ -4,11 +4,16 @@ import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+
+import it.unibo.oop.lab.reactivegui01.ConcurrentGUI;
+import it.unibo.oop.lab.reactivegui01.ConcurrentGUI.Agent;
 
 public class ConcurrentGUI extends JFrame {
 
@@ -16,13 +21,19 @@ public class ConcurrentGUI extends JFrame {
     private static final double WIDTH_PERC = 0.2;
     private static final double HEIGHT_PERC = 0.1;
 
+    private final JLabel  display;
+    private final JButton up;
+    private final JButton down;
+    private final JButton stop;
+
     public ConcurrentGUI() throws HeadlessException {
         super();
         final JPanel canvas = new JPanel();
-        private final JLabel display = new JLabel();
-        private final JButton up = new JButton("up");
-        private final JButton down = new JButton("down");
-        private final JButton stop = new JButton("stop");
+
+        display = new JLabel();
+        up = new JButton("up");
+        down = new JButton("down"); 
+        stop = new JButton("stop"); 
 
         final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         this.setSize((int) (screenSize.getWidth() * WIDTH_PERC), (int) (screenSize.getHeight() * HEIGHT_PERC));
@@ -33,8 +44,54 @@ public class ConcurrentGUI extends JFrame {
         canvas.add(down);
         canvas.add(stop);
 
-        this.getContentPane().add(panel);
+        this.getContentPane().add(canvas);
         this.setVisible(true);
+    }
+
+    private class Agent implements Runnable {
+        static final int INCREMENT = +1;
+        static final int DECREMENT = -1;
+
+        private volatile boolean stop;
+        private volatile int counter;
+        private int add;
+
+        Agent() {
+            this.add = INCREMENT;
+            this.counter = 0;
+            this.stop = false;
+        }
+
+        @Override
+        public void run() {
+            while (!this.stop) {
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
+                        public void run() {
+                            ConcurrentGUI.this.display.setText(Integer.toString(Agent.this.counter));
+                        }
+                    });
+                    counter += this.add;
+                } catch (InvocationTargetException | InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+
+            }
+        }
+
+        public void up() {
+            this.add = INCREMENT;
+        }
+
+        public void down() {
+            this.add = DECREMENT;
+        }
+
+        public void stop() {
+            this.stop = true;
+        }
+
     }
 
 
