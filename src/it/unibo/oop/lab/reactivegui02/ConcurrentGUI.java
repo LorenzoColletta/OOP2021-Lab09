@@ -4,6 +4,8 @@ import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JButton;
@@ -12,12 +14,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import it.unibo.oop.lab.reactivegui01.ConcurrentGUI;
 import it.unibo.oop.lab.reactivegui01.ConcurrentGUI.Agent;
+
+
 
 public class ConcurrentGUI extends JFrame {
 
-    private static final long SERIAL_VERSION_UID = 1L;
     private static final double WIDTH_PERC = 0.2;
     private static final double HEIGHT_PERC = 0.1;
 
@@ -43,6 +45,25 @@ public class ConcurrentGUI extends JFrame {
         canvas.add(up);
         canvas.add(down);
         canvas.add(stop);
+
+        final Agent agent = new Agent();
+        new Thread(agent).start();
+
+        stop.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
+                agent.stop();
+            }
+        });
+        up.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e1) {
+                agent.up();
+            }
+        });
+        down.addActionListener(new ActionListener() {
+            public void actionPerformed(final ActionEvent e2) {
+                agent.down();
+            }
+        });
 
         this.getContentPane().add(canvas);
         this.setVisible(true);
