@@ -6,7 +6,6 @@ import java.util.List;
 
 /**
  * 
- * @author Lorenzo
  *
  */
 public class MultiThreadedSumMatrix implements SumMatrix {
@@ -25,22 +24,23 @@ public class MultiThreadedSumMatrix implements SumMatrix {
         private double[][] matrix;
         private int startPos;
         private int nElements;
-        private long res;
+        private double res;
 
         Worker(final double[][] matrix, final int startPos, final int nElements) {
             this.matrix = matrix;
             this.startPos = startPos;
             this.nElements = nElements;
+            res = 0;
         }
 
         public void run() {
-            final int start = startPos / matrix[0].length + startPos % matrix[0].length;
-            for (int i = 0; i < nElements; i++) {
-                res += matrix[startPos / matrix[0].length][(startPos + i) % matrix[0].length];
+            int start = startPos / matrix[0].length;
+            for (int i = 0; i < nElements - startPos; i++) {
+                res += matrix[start + i / matrix[0].length][(startPos + i) % matrix[0].length];
             }
         }
 
-        public long getResult() {
+        public double getResult() {
             return this.res;
         }
     }
@@ -52,23 +52,33 @@ public class MultiThreadedSumMatrix implements SumMatrix {
         for (double[] i : matrix) {
             matrixLength += i.length;
         }
+        //System.out.println("matrixLength: " + matrixLength);
 
         final List<Worker> workers = new ArrayList<>(nThreads);
         int elements = 0;
         for (int i = 0; i < nThreads; i++) {
-            workers.add(new Worker(matrix, elements, elements + matrixLength / nThreads + (matrixLength % nThreads) < i ? 1 : 0));
+            //System.out.print("start: " + elements);
+            workers.add(new Worker(matrix, elements, elements + matrixLength / nThreads + (i < (matrixLength % nThreads) ? 1 : 0)));
+            elements += matrixLength / nThreads + (i < (matrixLength % nThreads) ? 1 : 0);
+            //System.out.println(" Size: " + elements + " Calculus: " + (matrixLength / nThreads + (i < (matrixLength % nThreads) ? 1 : 0)));
+
         }
 
-        long sum = 0;
+        for (final Thread worker: workers) {
+            worker.start();
+        }
+
+        double sum = 0;
         for (final Worker w: workers) {
             try {
                 w.join();
                 sum += w.getResult();
+                //System.out.println("GetResult(): " + w.getResult());
             } catch (InterruptedException e) {
                 throw new IllegalStateException(e);
             }
         }
-        return 0;
+        return sum;
     }
 
 }
