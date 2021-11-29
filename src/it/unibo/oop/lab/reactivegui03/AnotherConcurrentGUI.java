@@ -59,9 +59,7 @@ public class AnotherConcurrentGUI extends JFrame {
         stop.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 agent.stop();
-                up.setEnabled(false);
-                down.setEnabled(false);
-                stop.setEnabled(false);
+                AnotherConcurrentGUI.this.stopAgent();
             }
         });
 
@@ -86,7 +84,8 @@ public class AnotherConcurrentGUI extends JFrame {
                     SwingUtilities.invokeAndWait(new Runnable() {
                         @Override
                         public void run() {
-                            AnotherConcurrentGUI.this.stop.doClick();
+                            agent.stop();
+                            AnotherConcurrentGUI.this.stopAgent();
                         }
                     });
                 } catch (InterruptedException | InvocationTargetException e) {
@@ -100,6 +99,12 @@ public class AnotherConcurrentGUI extends JFrame {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.getContentPane().add(canvas);
         this.setVisible(true);
+    }
+
+    private void stopAgent() {
+        this.up.setEnabled(false);
+        this.down.setEnabled(false);
+        this.stop.setEnabled(false);
     }
 
     private class Agent implements Runnable {
