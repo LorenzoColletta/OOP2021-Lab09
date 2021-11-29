@@ -3,11 +3,13 @@ package it.unibo.oop.lab.reactivegui03;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Toolkit;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 public class AnotherConcurrentGUI extends JFrame {
 
@@ -45,12 +47,53 @@ public class AnotherConcurrentGUI extends JFrame {
         canvas.add(down);
         canvas.add(stop);
 
+
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.getContentPane().add(canvas);
         this.setVisible(true);
-
-
     }
 
+    private class Agent implements Runnable {
+
+        private volatile int counter;
+        private volatile boolean stopCounter;
+        private boolean up;
+
+        Agent() {
+            up = true;
+            this.counter = 0;
+            this.stopCounter = false;
+        }
+
+        @Override
+        public void run() {
+            while (!stopCounter) {
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
+                        public void run() {
+                            AnotherConcurrentGUI.this.display.setText("" + counter);
+                        }
+                    });
+                    this.counter += up ? +1 : -1;
+                } catch (InvocationTargetException | InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        public void up() {
+            this.up = true;
+        }
+
+        public void down() {
+            this.up = false;
+        }
+
+        public void stop() {
+            this.stopCounter = true;
+        }
+
+    }
 
 }
